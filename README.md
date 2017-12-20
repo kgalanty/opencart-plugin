@@ -66,7 +66,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 **BitPay Support:**
 
-* Last Cart Version Tested: 2.3.0.2
+* Last OpenCart Version Tested: 3.2.0.2 (not compatible with v2 branch)
 * [GitHub Issues](https://github.com/bitpay/magento-plugin/issues)
   * Open an issue if you are having issues with this plugin.
 * [Support](https://help.bitpay.com)
