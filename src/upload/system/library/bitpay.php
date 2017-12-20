@@ -134,10 +134,10 @@ class Bitpay {
 		$private_key = new Bitpay\PrivateKey();
 		$private_key->generate();
 		$public_key = $private_key->getPublicKey();
-
+		
 		// Persist the keys to the database
-		$this->setting('private_key', $this->encryption->encrypt(serialize($private_key)));
-		$this->setting('public_key', $this->encryption->encrypt(serialize($public_key)));
+		$this->setting('private_key', $this->encryption->encrypt('0123456789',serialize($private_key)));
+		$this->setting('public_key', $this->encryption->encrypt('0123456789',serialize($public_key)));
 		$this->setting('connection', 'disconnected');
 		$this->setting('token', null);
 
@@ -239,14 +239,14 @@ class Bitpay {
 			return $this->generateId();
 		}
 
-		$this->log('debug', $this->language->get('log_private_key_found'));
-		$private_key = @unserialize($this->encryption->decrypt($private_key));
-
+		$this->log('debug', $this->language->get('log_private_key_found')); 
+		$private_key = unserialize($this->encryption->decrypt('0123456789', $private_key));
+		
 		// Check for key integrity
 		if (!($private_key instanceof Bitpay\PrivateKey)) {
 			$this->log('error', sprintf($this->language->get('log_private_key_wrong_type'), gettype($private_key)));
 			$this->log('trace', sprintf($this->language->get('log_encrypted_key'), $private_key));
-			$this->log('trace', sprintf($this->language->get('log_decrypted_key'), $this->encryption->decrypt($private_key)));
+			$this->log('trace', sprintf($this->language->get('log_decrypted_key'), $this->encryption->decrypt('0123456789', $private_key)));
 			throw new UnexpectedValueException();
 		}
 
@@ -268,13 +268,13 @@ class Bitpay {
 		}
 
 		$this->log('debug', $this->language->get('log_public_key_found'));
-		$public_key = @unserialize($this->encryption->decrypt($public_key));
+		$public_key = @unserialize($this->encryption->decrypt('0123456789', $public_key));
 
 		// Check for key integrity
 		if (!($public_key instanceof Bitpay\PublicKey)) {
 			$this->log('error', sprintf($this->language->get('log_public_key_wrong_type'), gettype($public_key)));
 			$this->log('trace', sprintf($this->language->get('log_encrypted_key'), $public_key));
-			$this->log('trace', sprintf($this->language->get('log_decrypted_key'), $this->encryption->decrypt($public_key)));
+			$this->log('trace', sprintf($this->language->get('log_decrypted_key'), $this->encryption->decrypt('0123456789', $public_key)));
 
 			// Try to fix the problem by regenerating it
 			$this->log('debug', $this->language->get('log_public_key_regenerate'));
@@ -310,15 +310,7 @@ class Bitpay {
 	 */
 	public function sendSupportRequest() {
 
-		$mail = new Mail(array(
-			'protocol' => $this->config->get('config_mail')['protocol'],
-			'parameter' => $this->config->get('config_mail')['parameter'],
-			'hostname' => $this->config->get('config_mail')['smtp_hostname'],
-			'username' => $this->config->get('config_mail')['smtp_username'],
-			'password' => $this->config->get('config_mail')['smtp_password'],
-			'port' => $this->config->get('config_mail')['smtp_port'],
-			'timeout' => $this->config->get('config_mail')['smtp_timeout']
-		));
+		$mail = new Mail();
 
 		$mail->setTo('support@bitpay.com');
 		$mail->setFrom($this->request->post['request_email_address']);
@@ -422,12 +414,13 @@ class Bitpay {
 	 */
 	public function setting($key, $value = null) {
 		// Normalize key
-		$key = 'bitpay_' . $key;
+		$code = 'payment_bitpay';
+		$key = $code.'_' . $key;
 
 		// Set the setting
 		if (func_num_args() === 2) {
 			if (!is_array($value)) {
-				$this->db->query("UPDATE " . DB_PREFIX . "setting SET `value` = '" . $this->db->escape($value) . "', serialized = '0' WHERE `code` = 'bitpay' AND `key` = '" . $this->db->escape($key) . "' AND store_id = '0'");
+				$this->db->query("UPDATE " . DB_PREFIX . "setting SET `value` = '" . $this->db->escape($value) . "', serialized = '0' WHERE `code` = '".$code."' AND `key` = '" . $this->db->escape($key) . "' AND store_id = '0'");
 			} else {
 				$this->db->query("UPDATE " . DB_PREFIX . "setting SET `value` = '" . $this->db->escape(serialize($value)) . "', serialized = '1' code `group` = 'bitpay' AND `key` = '" . $this->db->escape($key) . "' AND store_id = '0'");
 			}

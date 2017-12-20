@@ -44,6 +44,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 	 * @return void
 	 */
 	public function index() {
+
 		$data['testnet'] = ($this->setting('network') === 'livenet') ? false : true;
 		$data['warning_testnet'] = $this->language->get('warning_testnet');
 		$data['url_redirect'] = $this->url->link('extension/payment/bitpay/confirm', $this->config->get('config_secure'));
@@ -53,10 +54,10 @@ class ControllerExtensionPaymentBitpay extends Controller {
 			unset($this->session->data['error_bitpay']);
 		}
 
-		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/extension/payment/bitpay.tpl')) {
-			return $this->load->view($this->config->get('config_template') . '/template/extension/payment/bitpay.tpl', $data);
+		if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/extension/payment/bitpay')) {
+			return $this->load->view($this->config->get('config_template') . '/template/extension/payment/bitpay', $data);
 		} else {
-			return $this->load->view('extension/payment/bitpay.tpl', $data);
+			return $this->load->view('extension/payment/bitpay', $data);
 		}
 	}
 
@@ -65,7 +66,9 @@ class ControllerExtensionPaymentBitpay extends Controller {
 	 * @return void
 	 */
 	public function confirm() {
+
 		$this->load->model('checkout/order');
+
 		if (!isset($this->session->data['order_id'])) {
 			$this->response->redirect($this->url->link('checkout/cart'));
 			return;
@@ -245,7 +248,6 @@ class ControllerExtensionPaymentBitpay extends Controller {
 			$this->log('warn', 'IPN handler called with no data');
 			return;
 		}
-
 		$json = @json_decode($post, true);
 		if (empty($json)) {
 			$this->log('warn', 'IPN handler called with invalid data');

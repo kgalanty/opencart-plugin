@@ -50,20 +50,21 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		// Saving settings
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->request->post['action'] === 'save' && $this->validate()) {
 
-			$this->setting('risk_speed', $this->request->post['bitpay_risk_speed']);
-			$this->setting('send_buyer_info', $this->request->post['bitpay_send_buyer_info']);
-			$this->setting('geo_zone_id', $this->request->post['bitpay_geo_zone_id']);
-			$this->setting('status', $this->request->post['bitpay_status']);
-			$this->setting('sort_order', $this->request->post['bitpay_sort_order']);
-			$this->setting('paid_status', $this->request->post['bitpay_paid_status']);
-			$this->setting('confirmed_status', $this->request->post['bitpay_confirmed_status']);
-			$this->setting('complete_status', $this->request->post['bitpay_complete_status']);
-			$this->setting('notify_url', $this->request->post['bitpay_notify_url']);
-			$this->setting('return_url', $this->request->post['bitpay_return_url']);
-			$this->setting('debug', $this->request->post['bitpay_debug']);
+			$this->session->data['success'] = $this->language->get('text_success');
+			$this->setting('risk_speed', $this->request->post['payment_bitpay_risk_speed']);
+			$this->setting('send_buyer_info', $this->request->post['payment_bitpay_send_buyer_info']);
+			$this->setting('geo_zone_id', $this->request->post['payment_bitpay_geo_zone_id']);
+			$this->setting('status', $this->request->post['payment_bitpay_status']);
+			$this->setting('sort_order', $this->request->post['payment_bitpay_sort_order']);
+			$this->setting('paid_status', $this->request->post['payment_bitpay_paid_status']);
+			$this->setting('confirmed_status', $this->request->post['payment_bitpay_confirmed_status']);
+			$this->setting('complete_status', $this->request->post['payment_bitpay_complete_status']);
+			$this->setting('notify_url', $this->request->post['payment_bitpay_notify_url']);
+			$this->setting('return_url', $this->request->post['payment_bitpay_return_url']);
+			$this->setting('debug', $this->request->post['payment_bitpay_debug']);
 
 			$this->session->data['success'] = $this->language->get('text_success');
-			$this->response->redirect($this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL'));
+			$this->response->redirect($this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'], true));
 		}
 
 		// Send Support Request form submitted
@@ -143,37 +144,40 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		$data['tab_log'] = $this->language->get('tab_log');
 		$data['tab_support'] = $this->language->get('tab_support');
 
-		$data['url_action'] = $this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL');
-		$data['url_cancel'] = $this->url->link('extension/extension', 'token=' . $this->session->data['token'], 'SSL');
-		$data['url_reset'] = $this->url->link('extension/payment/bitpay/reset', 'token=' . $this->session->data['token'], 'SSL');
+		$data['url_action'] = $this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'], 'SSL');
+		$data['url_cancel'] = $this->url->link('extension/extension', 'user_token=' . $this->session->data['user_token'], 'SSL');
+		$data['url_reset'] = $this->url->link('extension/payment/bitpay/reset', 'user_token=' . $this->session->data['user_token'], 'SSL');
 
 		$data['breadcrumbs'] = array();
+
 		$data['breadcrumbs'][] = array(
 			'text' => $this->language->get('text_home'),
-			'href' => $this->url->link('common/dashboard', 'token=' . $this->session->data['token'], 'SSL')
-		);
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('text_payment'),
-			'href' => $this->url->link('extension', 'token=' . $this->session->data['token'], 'SSL')
-		);
-		$data['breadcrumbs'][] = array(
-			'text' => $this->language->get('heading_title'),
-			'href' => $this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL')
+			'href' => $this->url->link('common/dashboard', 'user_token=' . $this->session->data['user_token'], true)
 		);
 
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('text_payment'),
+			'href' => $this->url->link('marketplace/extension', 'user_token=' . $this->session->data['user_token'] . '&type=payment', true)
+		);
+
+		$data['breadcrumbs'][] = array(
+			'text' => $this->language->get('heading_title'),
+			'href' => $this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'], true)
+		);
 		// #GENERAL
-		$data['bitpay_connection'] = $this->setting('connection');
+		$data['bitpay_connection'] = $this->config->get('payment_bitpay_connection');
+
 		$data['bitpay_network'] = $this->setting('network');
-		$data['url_connect_livenet'] = $this->url->link('extension/payment/bitpay/connect', 'network=livenet&token=' . $this->session->data['token'], 'SSL');
-		$data['url_connect_testnet'] = $this->url->link('extension/payment/bitpay/connect', 'network=testnet&token=' . $this->session->data['token'], 'SSL');
+		$data['url_connect_livenet'] = $this->url->link('extension/payment/bitpay/connect', 'network=livenet&user_token=' . $this->session->data['user_token'], 'SSL');
+		$data['url_connect_testnet'] = $this->url->link('extension/payment/bitpay/connect', 'network=testnet&user_token=' . $this->session->data['user_token'], 'SSL');
 		if (isset($this->request->get['network']) && !empty($this->request->get['network']['url']) && !empty($this->request->get['network']['port'])) {
 			$network = $this->request->get['network'];
 			$network_param = 'network[url]=' . urlencode($network['url']) . '&network[port]=' . $network['port'];
 			$network_param .= (isset($network['port_required'])) ? '&network[port_required]' : '';
-			$data['url_connect_livenet'] = $this->url->link('extension/payment/bitpay/connect', $network_param . '&token=' . $this->session->data['token'], 'SSL');
+			$data['url_connect_livenet'] = $this->url->link('extension/payment/bitpay/connect', $network_param . '&user_token=' . $this->session->data['user_token'], 'SSL');
 		}
-		$data['url_disconnect'] = $this->url->link('extension/payment/bitpay/disconnect', 'network=testnet&token=' . $this->session->data['token'], 'SSL');
-		$data['url_connected'] = str_replace('&amp;', '&', $this->url->link('extension/payment/bitpay/connected', 'token=' . $this->session->data['token'], 'SSL'));
+		$data['url_disconnect'] = $this->url->link('extension/payment/bitpay/disconnect', 'network=testnet&user_token=' . $this->session->data['user_token'], 'SSL');
+		$data['url_connected'] = str_replace('&amp;', '&', $this->url->link('extension/payment/bitpay/connected', 'user_token=' . $this->session->data['user_token'], 'SSL'));
 
 		if (is_array($this->setting('network'))) {
 			$network_title = 'Customnet(' . $this->setting('network')['url'] . ')';
@@ -185,7 +189,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		$this->load->model('localisation/geo_zone');
 		$data['geo_zones'] = $this->model_localisation_geo_zone->getGeoZones();
 
-		$data['bitpay_risk_speed'] = (isset($this->request->post['bitpay_risk_speed'])) ? $this->request->post['bitpay_risk_speed'] : $this->setting('risk_speed');
+		$data['bitpay_risk_speed'] = (isset($this->request->post['payment_bitpay_risk_speed'])) ? $this->request->post['payment_bitpay_risk_speed'] : $this->setting('risk_speed');
 		$data['bitpay_send_buyer_info'] = (isset($this->request->post['bitpay_send_buyer_info'])) ? $this->request->post['bitpay_send_buyer_info'] : $this->setting('send_buyer_info');
 		$data['bitpay_geo_zone_id'] = (isset($this->request->post['bitpay_geo_zone_id'])) ? $this->request->post['bitpay_geo_zone_id'] : $this->setting('geo_zone_id');
 		$data['bitpay_status'] = (isset($this->request->post['bitpay_status'])) ? $this->request->post['bitpay_status'] : $this->setting('status');
@@ -241,7 +245,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 			}
 		}
 
-		$data['url_clear'] = $this->url->link('extension/payment/bitpay/clear', 'token=' . $this->session->data['token'], 'SSL');
+		$data['url_clear'] = $this->url->link('extension/payment/bitpay/clear', 'user_token=' . $this->session->data['user_token'], 'SSL');
 
 		// #SUPPORT
 		$data['request_name'] = (isset($this->request->post['request_name'])) ? $this->request->post['request_name'] : $this->config->get('config_owner');
@@ -313,7 +317,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 			$data['error_request'] = true;
 		}
 
-		$this->response->setOutput($this->load->view('extension/payment/bitpay.tpl', $data));
+		$this->response->setOutput($this->load->view('extension/payment/bitpay', $data));
 	}
 
 	/**
@@ -323,7 +327,8 @@ class ControllerExtensionPaymentBitpay extends Controller {
 	public function connect() {
 		$network = $this->bitpay->setNetwork($this->request->get['network']);
 		$this->log('debug', 'Attempting to connect to ' . $network);
-		$redirect = str_replace('&amp;', '&', $this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL'));
+		$redirect = str_replace('&amp;', '&', $this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'],  true));
+		
 		try {
 			$url = $this->bitpay->getPairingUrl() . '&redirect=' . urlencode($redirect);
 			$this->response->redirect($url);
@@ -331,7 +336,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		} catch (Exception $e) {
 			$this->log('error', $this->language->get('log_unable_to_connect'));
 			$this->session->data['warning'] = $this->language->get('warning_unable_to_connect');
-			$this->response->redirect($this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL'));
+			$this->response->redirect($this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'] . '', true));
 		}
 	}
 
@@ -347,7 +352,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		$this->setting('pairing_expiration', null);
 		$this->session->data['success'] = $this->language->get('success_disconnect');
 		$this->session->data['manual_disconnect'] = true;
-		$this->response->redirect($this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL'));
+		$this->response->redirect($this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'], 'SSL'));
 	}
 
 	/**
@@ -374,7 +379,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 
 			// Helpful message if a connection breaks (token revoked, etc)
 			if ($was_connected && $this->setting('connection') === 'disconnected' && true !== $this->session->data['manual_disconnect']) {
-				$pair_url = $this->url->link('extension/payment/bitpay/connect', 'network=' . $was_network . '&token=' . $this->session->data['token']);
+				$pair_url = $this->url->link('extension/payment/bitpay/connect', 'network=' . $was_network . '&user_token=' . $this->session->data['user_token']);
 				$notification = sprintf($this->language->get('warning_disconnected'), $pair_url);
 				if ($this->ajax) {
 					$data = array('error' => $notification);
@@ -404,7 +409,7 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		fclose($handle);
 
 		$this->session->data['success'] = $this->language->get('success_clear');
-		$this->response->redirect($this->url->link('extension/payment/bitpay', 'token=' . $this->session->data['token'], 'SSL'));
+		$this->response->redirect($this->url->link('extension/payment/bitpay', 'user_token=' . $this->session->data['user_token'], 'SSL'));
 	}
 
 	/**
@@ -451,13 +456,13 @@ class ControllerExtensionPaymentBitpay extends Controller {
 		if (!$this->user->hasPermission('modify', 'extension/payment/bitpay')) {
 			$this->error['warning'] = $this->language->get('warning_permission');
 		}
-		if (!empty($this->request->post['bitpay_notify_url']) && false === filter_var($this->request->post['bitpay_notify_url'], FILTER_VALIDATE_URL)) {
+		if (!empty($this->request->post['payment_bitpay_notify_url']) && false === filter_var($this->request->post['payment_bitpay_notify_url'], FILTER_VALIDATE_URL)) {
 			$this->error['notify_url'] = $this->language->get('error_notify_url');
 		}
-		if (!empty($this->request->post['bitpay_return_url']) && false === filter_var($this->request->post['bitpay_return_url'], FILTER_VALIDATE_URL)) {
+		if (!empty($this->request->post['payment_bitpay_return_url']) && false === filter_var($this->request->post['payment_bitpay_return_url'], FILTER_VALIDATE_URL)) {
 			$this->error['return_url'] = $this->language->get('error_return_url');
 		}
-		if ($this->request->post['bitpay_status'] && $this->setting('connection') !== 'connected') {
+		if ($this->request->post['payment_bitpay_status'] && $this->setting('connection') !== 'connected') {
 			$this->error['status'] = $this->language->get('error_status');
 		}
 
@@ -512,25 +517,25 @@ class ControllerExtensionPaymentBitpay extends Controller {
 
 		$this->load->model('setting/setting');
 		$default_settings = array(
-			'bitpay_private_key' => null,
-			'bitpay_public_key' => null,
-			'bitpay_connection' => 'disconnected',
-			'bitpay_network' => null,
-			'bitpay_token' => null,
-			'bitpay_risk_speed' => 'high',
-			'bitpay_send_buyer_info' => '0',
-			'bitpay_geo_zone_id' => '0',
-			'bitpay_status' => '0',
-			'bitpay_sort_order' => null,
-			'bitpay_paid_status' => $default_paid,
-			'bitpay_confirmed_status' => $default_confirmed,
-			'bitpay_complete_status' => $default_complete,
-			'bitpay_notify_url' => null,
-			'bitpay_return_url' => null,
-			'bitpay_debug' => '0',
-			'bitpay_version' => $this->bitpay->version,
+			'payment_bitpay_private_key' => null,
+			'payment_bitpay_public_key' => null,
+			'payment_bitpay_connection' => 'disconnected',
+			'payment_bitpay_network' => null,
+			'payment_bitpay_token' => null,
+			'payment_bitpay_risk_speed' => 'high',
+			'payment_bitpay_send_buyer_info' => '0',
+			'payment_bitpay_geo_zone_id' => '0',
+			'payment_bitpay_status' => '0',
+			'payment_bitpay_sort_order' => null,
+			'payment_bitpay_paid_status' => $default_paid,
+			'payment_bitpay_confirmed_status' => $default_confirmed,
+			'payment_bitpay_complete_status' => $default_complete,
+			'payment_bitpay_notify_url' => null,
+			'payment_bitpay_return_url' => null,
+			'payment_bitpay_debug' => '0',
+			'payment_bitpay_version' => $this->bitpay->version,
 		);
-		$this->model_setting_setting->editSetting('bitpay', $default_settings);
+		$this->model_setting_setting->editSetting('payment_bitpay', $default_settings);
 		$this->bitpay->generateId();
 	}
 
